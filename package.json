@@ -1,0 +1,19 @@
+{
+  "name": "ocr-service",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "OCR service using Tesseract.js",
+  "dependencies": {
+    "@fastify/multipart": "^10.1.1",
+    "fastify": "^5.12.1",
+    "tesseract.js": "^7.0.0"
+  }
+}
