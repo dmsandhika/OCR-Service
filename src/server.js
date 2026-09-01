@@ -5,9 +5,15 @@ import swaggerUi from "@fastify/swagger-ui";
 import ocrRoutes from "./routes/ocr.route.js";
 import { shutdownWorker } from "./services/ocr.service.js";
 
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({
+  logger: true,
+  ajv: { plugins: [multipart.ajvFilePlugin] },
+});
 
-await fastify.register(multipart);
+await fastify.register(multipart, {
+  attachFieldsToBody: true,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 await fastify.register(swagger, {
   openapi: {

@@ -13,13 +13,13 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const ocrSchema = {
   summary: "Extract text from an image",
   description:
-    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Indonesian).",
+    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Malay).",
   tags: ["OCR"],
   consumes: ["multipart/form-data"],
   body: {
     type: "object",
     properties: {
-      file: { type: "string", format: "binary", description: "Image file to run OCR on" },
+      file: { isFile: true, description: "Image file to run OCR on" },
     },
     required: ["file"],
   },
@@ -57,13 +57,7 @@ const ocrSchema = {
 
 export default async function ocrRoutes(fastify) {
   fastify.post("/ocr", { schema: ocrSchema }, async (request, reply) => {
-    const file = await request.file({
-      limits: { fileSize: MAX_FILE_SIZE_BYTES },
-    });
-
-    if (!file) {
-      return reply.code(400).send({ error: "No image file provided" });
-    }
+    const file = request.body.file;
 
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
       return reply.code(415).send({ error: `Unsupported file type: ${file.mimetype}` });
@@ -71,7 +65,7 @@ export default async function ocrRoutes(fastify) {
 
     const buffer = await file.toBuffer();
 
-    if (file.file.truncated) {
+    if (buffer.length > MAX_FILE_SIZE_BYTES) {
       return reply.code(413).send({ error: "File exceeds 10MB limit" });
     }
 

@@ -4,7 +4,7 @@ let workerPromise = null;
 
 function getWorker() {
   if (!workerPromise) {
-    workerPromise = createWorker("eng+ind");
+    workerPromise = createWorker("eng+msa");
   }
   return workerPromise;
 }
