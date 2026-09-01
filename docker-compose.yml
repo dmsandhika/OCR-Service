@@ -1,0 +1,15 @@
+services:
+  ocr-service:
+    build: .
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - PORT=3000
+      - API_KEY=${API_KEY}
+      - TESSDATA_CACHE_PATH=/app/.cache/tesseract
+    volumes:
+      - tessdata-cache:/app/.cache/tesseract
+    restart: unless-stopped
+
+volumes:
+  tessdata-cache:

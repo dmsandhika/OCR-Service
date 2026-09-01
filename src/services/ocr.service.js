@@ -1,10 +1,14 @@
+import { mkdirSync } from "node:fs";
 import { createWorker } from "tesseract.js";
+
+const CACHE_PATH = process.env.TESSDATA_CACHE_PATH || "./.cache/tesseract";
 
 let workerPromise = null;
 
 function getWorker() {
   if (!workerPromise) {
-    workerPromise = createWorker("eng+msa");
+    mkdirSync(CACHE_PATH, { recursive: true });
+    workerPromise = createWorker("eng+msa", 1, { cachePath: CACHE_PATH });
   }
   return workerPromise;
 }
