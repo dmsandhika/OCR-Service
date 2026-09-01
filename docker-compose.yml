@@ -5,10 +5,10 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - PORT=3000
-      - API_KEY=${API_KEY}
       - TESSDATA_CACHE_PATH=/app/.cache/tesseract
     volumes:
       - tessdata-cache:/app/.cache/tesseract
+      - ./config/api-keys.json:/app/config/api-keys.json:ro
     restart: unless-stopped
 
 volumes:

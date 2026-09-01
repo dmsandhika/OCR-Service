@@ -1,21 +1,20 @@
 import "dotenv/config";
-import crypto from "node:crypto";
 import Fastify from "fastify";
 import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import ocrRoutes from "./routes/ocr.route.js";
 import { shutdownWorker } from "./services/ocr.service.js";
+import { generatedKey } from "./config/apiKeys.js";
 
 const fastify = Fastify({
   logger: true,
   ajv: { plugins: [multipart.ajvFilePlugin] },
 });
 
-if (!process.env.API_KEY) {
-  process.env.API_KEY = crypto.randomBytes(24).toString("hex");
+if (generatedKey) {
   fastify.log.warn(
-    `API_KEY not set in environment — generated a temporary one for this run only: ${process.env.API_KEY}`
+    `No config/api-keys.json found — generated a temporary key for this run only: ${generatedKey}`
   );
 }
 

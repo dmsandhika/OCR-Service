@@ -78,6 +78,7 @@ export default async function ocrRoutes(fastify) {
 
     try {
       const result = await recognizeText(buffer);
+      request.log.info({ platform: request.platform }, "OCR request completed");
       return reply.send(result);
     } catch (err) {
       request.log.error(err, "OCR processing failed");
