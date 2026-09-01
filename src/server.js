@@ -1,3 +1,5 @@
+import "dotenv/config";
+import crypto from "node:crypto";
 import Fastify from "fastify";
 import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
@@ -10,6 +12,13 @@ const fastify = Fastify({
   ajv: { plugins: [multipart.ajvFilePlugin] },
 });
 
+if (!process.env.API_KEY) {
+  process.env.API_KEY = crypto.randomBytes(24).toString("hex");
+  fastify.log.warn(
+    `API_KEY not set in environment — generated a temporary one for this run only: ${process.env.API_KEY}`
+  );
+}
+
 await fastify.register(multipart, {
   attachFieldsToBody: true,
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -21,6 +30,11 @@ await fastify.register(swagger, {
       title: "OCR Service API",
       description: "OCR service powered by Tesseract.js, usable across multiple platforms.",
       version: "1.0.0",
+    },
+    components: {
+      securitySchemes: {
+        apiKey: { type: "apiKey", name: "x-api-key", in: "header" },
+      },
     },
   },
 });

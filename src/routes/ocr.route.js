@@ -1,4 +1,5 @@
 import { recognizeText } from "../services/ocr.service.js";
+import { requireApiKey } from "../middleware/apiKey.js";
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/png",
@@ -15,6 +16,7 @@ const ocrSchema = {
   description:
     "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Malay).",
   tags: ["OCR"],
+  security: [{ apiKey: [] }],
   consumes: ["multipart/form-data"],
   body: {
     type: "object",
@@ -37,6 +39,11 @@ const ocrSchema = {
       type: "object",
       properties: { error: { type: "string" } },
     },
+    401: {
+      description: "Invalid or missing API key",
+      type: "object",
+      properties: { error: { type: "string" } },
+    },
     413: {
       description: "File exceeds size limit",
       type: "object",
@@ -56,7 +63,7 @@ const ocrSchema = {
 };
 
 export default async function ocrRoutes(fastify) {
-  fastify.post("/ocr", { schema: ocrSchema }, async (request, reply) => {
+  fastify.post("/ocr", { schema: ocrSchema, preHandler: requireApiKey }, async (request, reply) => {
     const file = request.body.file;
 
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
