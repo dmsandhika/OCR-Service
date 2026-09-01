@@ -10,8 +10,53 @@ const ALLOWED_MIME_TYPES = new Set([
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
+const ocrSchema = {
+  summary: "Extract text from an image",
+  description:
+    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Indonesian).",
+  tags: ["OCR"],
+  consumes: ["multipart/form-data"],
+  body: {
+    type: "object",
+    properties: {
+      file: { type: "string", format: "binary", description: "Image file to run OCR on" },
+    },
+    required: ["file"],
+  },
+  response: {
+    200: {
+      description: "Text extracted successfully",
+      type: "object",
+      properties: {
+        text: { type: "string", description: "Extracted text" },
+        confidence: { type: "number", description: "OCR confidence score (0-100)" },
+      },
+    },
+    400: {
+      description: "No file provided",
+      type: "object",
+      properties: { error: { type: "string" } },
+    },
+    413: {
+      description: "File exceeds size limit",
+      type: "object",
+      properties: { error: { type: "string" } },
+    },
+    415: {
+      description: "Unsupported file type",
+      type: "object",
+      properties: { error: { type: "string" } },
+    },
+    500: {
+      description: "OCR processing failed",
+      type: "object",
+      properties: { error: { type: "string" } },
+    },
+  },
+};
+
 export default async function ocrRoutes(fastify) {
-  fastify.post("/ocr", async (request, reply) => {
+  fastify.post("/ocr", { schema: ocrSchema }, async (request, reply) => {
     const file = await request.file({
       limits: { fileSize: MAX_FILE_SIZE_BYTES },
     });

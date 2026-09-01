@@ -1,14 +1,32 @@
 import Fastify from "fastify";
 import multipart from "@fastify/multipart";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 import ocrRoutes from "./routes/ocr.route.js";
 import { shutdownWorker } from "./services/ocr.service.js";
 
 const fastify = Fastify({ logger: true });
 
 await fastify.register(multipart);
+
+await fastify.register(swagger, {
+  openapi: {
+    info: {
+      title: "OCR Service API",
+      description: "OCR service powered by Tesseract.js, usable across multiple platforms.",
+      version: "1.0.0",
+    },
+  },
+});
+await fastify.register(swaggerUi, { routePrefix: "/docs" });
+
 await fastify.register(ocrRoutes);
 
-fastify.get("/health", async () => ({ status: "ok" }));
+fastify.get(
+  "/health",
+  { schema: { tags: ["Health"], summary: "Health check" } },
+  async () => ({ status: "ok" })
+);
 
 const port = process.env.PORT || 3000;
 
