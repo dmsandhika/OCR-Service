@@ -24,6 +24,7 @@ const ocrSchema = {
     properties: {
       file: { isFile: true, description: "Image file to run OCR on" },
       type: {
+        type: "object",
         description: "Document type, for structured field extraction. Omit for plain text extraction.",
         properties: {
           value: { type: "string", enum: Object.keys(DOCUMENT_PARSERS) },
@@ -75,34 +76,64 @@ const ocrSchema = {
   },
 };
 
+// @fastify/multipart's attachFieldsToBody wraps every non-file field as
+// { value, fieldname, ... } before validation, so the real body schema for
+// `type` above has to describe that wrapper shape. That shape renders as a
+// raw JSON textarea in Swagger UI instead of a dropdown, so this transform
+// swaps in a clean display-only schema for /docs; it does not affect the
+// schema Fastify actually validates requests against.
+function swaggerTransform({ schema, url }) {
+  return {
+    url,
+    schema: {
+      ...schema,
+      body: {
+        ...schema.body,
+        properties: {
+          ...schema.body.properties,
+          type: {
+            type: "string",
+            enum: Object.keys(DOCUMENT_PARSERS),
+            description: "Document type, for structured field extraction. Omit for plain text extraction.",
+          },
+        },
+      },
+    },
+  };
+}
+
 export default async function ocrRoutes(fastify) {
-  fastify.post("/ocr", { schema: ocrSchema, preHandler: requireApiKey }, async (request, reply) => {
-    const file = request.body.file;
-    const documentType = request.body.type?.value;
+  fastify.post(
+    "/ocr",
+    { schema: ocrSchema, preHandler: requireApiKey, config: { swaggerTransform } },
+    async (request, reply) => {
+      const file = request.body.file;
+      const documentType = request.body.type?.value;
 
-    if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
-      return reply.code(415).send({ error: `Unsupported file type: ${file.mimetype}` });
-    }
-
-    const buffer = await file.toBuffer();
-
-    if (buffer.length > MAX_FILE_SIZE_BYTES) {
-      return reply.code(413).send({ error: "File exceeds 10MB limit" });
-    }
-
-    try {
-      const result = await recognizeText(buffer);
-      request.log.info({ platform: request.platform, documentType }, "OCR request completed");
-
-      if (documentType) {
-        const fields = DOCUMENT_PARSERS[documentType](result.text);
-        return reply.send({ ...result, type: documentType, fields });
+      if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+        return reply.code(415).send({ error: `Unsupported file type: ${file.mimetype}` });
       }
 
-      return reply.send(result);
-    } catch (err) {
-      request.log.error(err, "OCR processing failed");
-      return reply.code(500).send({ error: "Failed to process image" });
+      const buffer = await file.toBuffer();
+
+      if (buffer.length > MAX_FILE_SIZE_BYTES) {
+        return reply.code(413).send({ error: "File exceeds 10MB limit" });
+      }
+
+      try {
+        const result = await recognizeText(buffer);
+        request.log.info({ platform: request.platform, documentType }, "OCR request completed");
+
+        if (documentType) {
+          const fields = DOCUMENT_PARSERS[documentType](result.text);
+          return reply.send({ ...result, type: documentType, fields });
+        }
+
+        return reply.send(result);
+      } catch (err) {
+        request.log.error(err, "OCR processing failed");
+        return reply.code(500).send({ error: "Failed to process image" });
+      }
     }
-  });
+  );
 }
