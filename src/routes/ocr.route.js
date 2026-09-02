@@ -14,7 +14,7 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const ocrSchema = {
   summary: "Extract text from an image",
   description:
-    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Malay).",
+    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Indonesian + Malay).",
   tags: ["OCR"],
   security: [{ apiKey: [] }],
   consumes: ["multipart/form-data"],

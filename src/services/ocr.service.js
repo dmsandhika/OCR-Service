@@ -8,7 +8,7 @@ let workerPromise = null;
 function getWorker() {
   if (!workerPromise) {
     mkdirSync(CACHE_PATH, { recursive: true });
-    workerPromise = createWorker("eng+msa", 1, { cachePath: CACHE_PATH });
+    workerPromise = createWorker("eng+ind+msa", 1, { cachePath: CACHE_PATH });
   }
   return workerPromise;
 }
