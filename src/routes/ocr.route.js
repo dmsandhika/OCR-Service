@@ -1,5 +1,6 @@
 import { recognizeText } from "../services/ocr.service.js";
 import { requireApiKey } from "../middleware/apiKey.js";
+import { DOCUMENT_PARSERS } from "../parsers/index.js";
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/png",
@@ -14,7 +15,7 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const ocrSchema = {
   summary: "Extract text from an image",
   description:
-    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Indonesian + Malay).",
+    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Indonesian + Malay). Optionally pass `type` to also get structured fields parsed out for a known document layout.",
   tags: ["OCR"],
   security: [{ apiKey: [] }],
   consumes: ["multipart/form-data"],
@@ -22,6 +23,12 @@ const ocrSchema = {
     type: "object",
     properties: {
       file: { isFile: true, description: "Image file to run OCR on" },
+      type: {
+        description: "Document type, for structured field extraction. Omit for plain text extraction.",
+        properties: {
+          value: { type: "string", enum: Object.keys(DOCUMENT_PARSERS) },
+        },
+      },
     },
     required: ["file"],
   },
@@ -32,10 +39,16 @@ const ocrSchema = {
       properties: {
         text: { type: "string", description: "Extracted text" },
         confidence: { type: "number", description: "OCR confidence score (0-100)" },
+        type: { type: "string", description: "Document type, if provided" },
+        fields: {
+          type: "object",
+          additionalProperties: true,
+          description: "Structured fields parsed from the text, if type was provided",
+        },
       },
     },
     400: {
-      description: "No file provided",
+      description: "No file provided, or unsupported document type",
       type: "object",
       properties: { error: { type: "string" } },
     },
@@ -65,6 +78,7 @@ const ocrSchema = {
 export default async function ocrRoutes(fastify) {
   fastify.post("/ocr", { schema: ocrSchema, preHandler: requireApiKey }, async (request, reply) => {
     const file = request.body.file;
+    const documentType = request.body.type?.value;
 
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
       return reply.code(415).send({ error: `Unsupported file type: ${file.mimetype}` });
@@ -78,7 +92,13 @@ export default async function ocrRoutes(fastify) {
 
     try {
       const result = await recognizeText(buffer);
-      request.log.info({ platform: request.platform }, "OCR request completed");
+      request.log.info({ platform: request.platform, documentType }, "OCR request completed");
+
+      if (documentType) {
+        const fields = DOCUMENT_PARSERS[documentType](result.text);
+        return reply.send({ ...result, type: documentType, fields });
+      }
+
       return reply.send(result);
     } catch (err) {
       request.log.error(err, "OCR processing failed");
