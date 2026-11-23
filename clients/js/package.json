@@ -1,0 +1,37 @@
+{
+  "name": "@dmsandhika/ocr-client",
+  "version": "1.0.0",
+  "description": "Official JavaScript/TypeScript client for OCR Service (KTP, MyKad IC, Passport, and Receipts)",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/**/*.test.js"
+  },
+  "keywords": [
+    "ocr",
+    "ocr-client",
+    "ktp-ocr",
+    "passport-ocr",
+    "mykad-ocr",
+    "receipt-ocr"
+  ],
+  "author": "dmsandhika <dmsandhika87@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmsandhika/OCR-Service.git",
+    "directory": "clients/js"
+  }
+}
