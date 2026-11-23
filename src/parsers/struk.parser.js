@@ -1,5 +1,5 @@
 const DATE_PATTERN = /(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})/;
-const TOTAL_PATTERN = /\bTOTAL\b(?!\s*(DISKON|DISCOUNT|BAYAR))[^\d]{0,10}([\d.,]+)/i;
+const TOTAL_PATTERN = /\bTOTAL\b(?!\s*(DISKON|DISCOUNT|BAYAR))[^\d\n]*([\d.,]+)/i;
 
 export function parseStruk(text) {
   const fields = {};
