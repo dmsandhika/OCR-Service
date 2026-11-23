@@ -1,0 +1,32 @@
+{
+  "name": "dmsandhika/ocr-client",
+  "description": "Official PHP Client SDK for OCR Service (KTP, MyKad IC, Passport, and Receipts)",
+  "type": "library",
+  "keywords": [
+    "ocr",
+    "ktp",
+    "mykad",
+    "passport",
+    "receipt",
+    "tesseract",
+    "laravel",
+    "fastify"
+  ],
+  "homepage": "https://github.com/dmsandhika/OCR-Service",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "dmsandhika",
+      "email": "dmsandhika87@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.1",
+    "guzzlehttp/guzzle": "^7.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Dmsandhika\\OcrClient\\": "clients/php/src/"
+    }
+  }
+}

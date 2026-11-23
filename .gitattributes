@@ -1,0 +1,14 @@
+# Ignore non-PHP files when Composer downloads release archives (git archive)
+/.github export-ignore
+/.cache export-ignore
+/config export-ignore
+/scripts export-ignore
+/src export-ignore
+/tests export-ignore
+/clients/js export-ignore
+.dockerignore export-ignore
+.env.example export-ignore
+docker-compose.yml export-ignore
+Dockerfile export-ignore
+package.json export-ignore
+package-lock.json export-ignore
