@@ -32,7 +32,9 @@
   "homepage": "https://github.com/dmsandhika/OCR-Service#readme",
   "description": "Multi-platform OCR service powered by Fastify and Tesseract.js with structured parsers for KTP, Malaysian IC, passport, and receipts.",
   "dependencies": {
+    "@fastify/cors": "^11.4.3",
     "@fastify/multipart": "^10.1.1",
+    "@fastify/rate-limit": "^11.3.0",
     "@fastify/swagger": "^9.8.1",
     "@fastify/swagger-ui": "^6.1.1",
     "dotenv": "^17.4.2",

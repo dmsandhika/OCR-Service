@@ -1,5 +1,7 @@
 import "dotenv/config";
 import Fastify from "fastify";
+import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
@@ -10,6 +12,16 @@ import { generatedKey } from "./config/apiKeys.js";
 const fastify = Fastify({
   logger: true,
   ajv: { plugins: [multipart.ajvFilePlugin] },
+});
+
+await fastify.register(cors, {
+  origin: true,
+  methods: ["GET", "POST", "OPTIONS"],
+});
+
+await fastify.register(rateLimit, {
+  max: Number(process.env.RATE_LIMIT_MAX || 60),
+  timeWindow: "1 minute",
 });
 
 if (generatedKey) {
