@@ -1,5 +1,8 @@
 # OCR Service
 
+[![CI](https://github.com/dmsandhika/OCR-Service/actions/workflows/ci.yml/badge.svg)](https://github.com/dmsandhika/OCR-Service/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 OCR service powered by [Tesseract.js](https://github.com/naptha/tesseract.js), built as a standalone API so it can be reused across multiple platforms (web, mobile, backend integrations, etc). Supports English, Indonesian, and Malay text out of the box, plus optional structured field extraction for a few known document layouts (KTP, Malaysian IC, passport, and receipts).
 
 ## Features
@@ -9,6 +12,19 @@ OCR service powered by [Tesseract.js](https://github.com/naptha/tesseract.js), b
 - Per-platform API keys — each client gets its own key, revocable independently
 - Interactive API docs at `/docs` (Swagger UI)
 - Dockerized, with a persistent cache for Tesseract's language data
+
+## Client SDKs (NPM & Composer)
+
+Official client libraries are available for fast integration:
+
+- **JavaScript / TypeScript (NPM)**: [`@dmsandhika/ocr-client`](clients/js)
+  ```bash
+  npm install @dmsandhika/ocr-client
+  ```
+- **PHP / Laravel (Composer)**: [`dmsandhika/ocr-client`](clients/php)
+  ```bash
+  composer require dmsandhika/ocr-client
+  ```
 
 ## Tech Stack
 
@@ -107,6 +123,9 @@ This builds the image, starts the service on `PORT` (default `3000`), and mounts
 ## Project Structure
 
 ```
+clients/
+  js/                    # JavaScript / TypeScript SDK (NPM)
+  php/                   # PHP & Laravel SDK (Composer)
 src/
   server.js              # Fastify app setup, Swagger, graceful shutdown
   config/apiKeys.js       # Loads config/api-keys.json, falls back to a temp key
@@ -114,6 +133,7 @@ src/
   routes/ocr.route.js     # POST /ocr
   services/ocr.service.js # Tesseract worker wrapper
   parsers/                # Per-document-type field extraction
+tests/                   # Automated unit tests for document parsers
 scripts/
   generate-api-key.js     # Generates and appends a new platform API key
 ```
