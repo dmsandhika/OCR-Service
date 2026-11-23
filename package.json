@@ -8,10 +8,28 @@
     "dev": "node --watch src/server.js",
     "generate-key": "node scripts/generate-api-key.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "OCR service using Tesseract.js",
+  "keywords": [
+    "ocr",
+    "tesseract",
+    "fastify",
+    "ktp",
+    "passport",
+    "mykad",
+    "receipt-scanner",
+    "id-card-ocr",
+    "document-parsing"
+  ],
+  "author": "dmsandhika <dmsandhika87@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmsandhika/OCR-Service.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dmsandhika/OCR-Service/issues"
+  },
+  "homepage": "https://github.com/dmsandhika/OCR-Service#readme",
+  "description": "Multi-platform OCR service powered by Fastify and Tesseract.js with structured parsers for KTP, Malaysian IC, passport, and receipts.",
   "dependencies": {
     "@fastify/multipart": "^10.1.1",
     "@fastify/swagger": "^9.8.1",

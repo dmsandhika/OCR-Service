@@ -1,0 +1,41 @@
+name: Laporan Bug
+description: Buat laporan kesalahan untuk membantu kami memperbaiki masalah
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Terima kasih telah meluangkan waktu untuk melaporkan bug!
+  - type: textarea
+    id: deskripsi
+    attributes:
+      label: Deskripsi Masalah
+      description: Jelaskan masalah apa yang Anda temukan secara jelas dan ringkas.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduksi
+    attributes:
+      label: Langkah Reproduksi
+      description: Bagaimana cara memunculkan masalah tersebut?
+      placeholder: |
+        1. Jalankan server 'npm start'
+        2. Kirim request POST ke '/ocr' dengan file ...
+        3. Lihat error pada response ...
+    validations:
+      required: true
+  - type: textarea
+    id: ekspektasi
+    attributes:
+      label: Perilaku yang Diharapkan
+      description: Apa yang seharusnya terjadi?
+    validations:
+      required: true
+  - type: textarea
+    id: lingkungan
+    attributes:
+      label: Lingkungan Sistem
+      description: Node.js version, OS, browser, Docker (jika relevan).
+      placeholder: |
+        - OS: macOS / Ubuntu 22.04
+        - Node.js: v20.x
+        - Docker: Ya/Tidak
