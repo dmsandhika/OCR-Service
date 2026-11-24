@@ -76,6 +76,68 @@ const ocrSchema = {
   },
 };
 
+const bulkOcrSchema = {
+  summary: "Extract text from multiple images in bulk",
+  description:
+    "Upload one or multiple images (max 30MB each) and extract text concurrently, with optional structured field extraction.",
+  tags: ["OCR"],
+  security: [{ apiKey: [] }],
+  consumes: ["multipart/form-data"],
+  body: {
+    type: "object",
+    properties: {
+      files: { isFile: true, description: "Image file(s) to process in bulk" },
+      type: {
+        type: "object",
+        description: "Document type, for structured field extraction (`ktp`, `ic`, `passport`, `struk`, `landing_page`).",
+        properties: {
+          value: { type: "string", enum: Object.keys(DOCUMENT_PARSERS) },
+        },
+      },
+    },
+    required: ["files"],
+  },
+  response: {
+    200: {
+      description: "Bulk extraction completed",
+      type: "object",
+      properties: {
+        total: { type: "number", description: "Total files received" },
+        successful: { type: "number", description: "Successfully processed files" },
+        results: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              filename: { type: "string" },
+              text: { type: "string" },
+              confidence: { type: "number" },
+              type: { type: "string" },
+              fields: { type: "object", additionalProperties: true },
+              error: { type: "string" },
+            },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid request parameters or missing files",
+      type: "object",
+      properties: { error: { type: "string" } },
+    },
+    401: {
+      description: "Invalid or missing API key",
+      type: "object",
+      properties: { error: { type: "string" } },
+    },
+    500: {
+      description: "Server error during processing",
+      type: "object",
+      properties: { error: { type: "string" } },
+    },
+  },
+};
+
 // @fastify/multipart's attachFieldsToBody wraps every non-file field as
 // { value, fieldname, ... } before validation, so the real body schema for
 // `type` above has to describe that wrapper shape. That shape renders as a
@@ -140,13 +202,9 @@ export default async function ocrRoutes(fastify) {
   fastify.post(
     "/ocr/bulk",
     {
-      schema: {
-        summary: "Extract text from multiple images in bulk",
-        description: "Upload multiple images and extract text concurrently, with optional structured field extraction.",
-        tags: ["OCR"],
-        security: [{ apiKey: [] }],
-      },
+      schema: bulkOcrSchema,
       preHandler: requireApiKey,
+      config: { swaggerTransform },
     },
     async (request, reply) => {
       const rawFiles = request.body.files || request.body.file;
