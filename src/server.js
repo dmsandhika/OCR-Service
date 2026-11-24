@@ -32,7 +32,7 @@ if (generatedKey) {
 
 await fastify.register(multipart, {
   attachFieldsToBody: true,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 30 * 1024 * 1024 },
 });
 
 await fastify.register(swagger, {

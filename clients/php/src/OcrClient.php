@@ -67,7 +67,7 @@ class OcrClient
      *
      * @param string $binaryContent Binary content of the image
      * @param string $filename Name of the file, e.g. 'ktp.jpg'
-     * @param string|null $type Document parser type ('ktp', 'ic', 'passport', 'struk')
+     * @param string|null $type Document parser type ('ktp', 'ic', 'passport', 'struk', 'landing_page')
      * @return array
      * @throws OcrException
      */
@@ -75,6 +75,35 @@ class OcrClient
     {
         $stream = Utils::streamFor($binaryContent);
         return $this->sendScanRequest($stream, $filename, $type);
+    }
+
+    /**
+     * Scan multiple image files in bulk.
+     *
+     * @param array<string> $filePaths List of file paths to process
+     * @param string|null $type Document parser type ('ktp', 'ic', 'passport', 'struk', 'landing_page')
+     * @return array
+     */
+    public function scanBulk(array $filePaths, ?string $type = null): array
+    {
+        $results = [];
+        foreach ($filePaths as $path) {
+            try {
+                $results[] = [
+                    'path'    => $path,
+                    'success' => true,
+                    'data'    => $this->scan($path, $type),
+                ];
+            } catch (OcrException $e) {
+                $results[] = [
+                    'path'       => $path,
+                    'success'    => false,
+                    'error'      => $e->getMessage(),
+                    'statusCode' => $e->getStatusCode(),
+                ];
+            }
+        }
+        return $results;
     }
 
     /**

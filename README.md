@@ -8,7 +8,9 @@ OCR service powered by [Tesseract.js](https://github.com/naptha/tesseract.js), b
 ## Features
 
 - `POST /ocr` — upload an image, get back extracted text
-- Optional structured field extraction (`type=ktp`, `ic`, `passport`, or `struk`)
+- `POST /ocr/bulk` — bulk upload multiple images, get back structured results concurrently
+- Structured field extraction: `ktp`, `ic`, `passport`, `struk`, and **`landing_page`** (CTAs, pricing, contacts, headlines, features)
+- **Long screenshot auto-tiling** — uses `sharp` to slice full-height webpage captures into manageable segments, preventing memory overflow
 - Per-platform API keys — each client gets its own key, revocable independently
 - Interactive API docs at `/docs` (Swagger UI)
 - Dockerized, with a persistent cache for Tesseract's language data

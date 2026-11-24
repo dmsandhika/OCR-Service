@@ -1,4 +1,27 @@
-export type DocumentType = 'ktp' | 'ic' | 'passport' | 'struk';
+export type DocumentType = 'ktp' | 'ic' | 'passport' | 'struk' | 'landing_page';
+
+export interface LandingPageContacts {
+  emails: string[];
+  phones: string[];
+  urls: string[];
+}
+
+export interface LandingPageMeta {
+  totalLines: number;
+  estimatedSections: number;
+}
+
+export interface LandingPageFields {
+  headlines: string[];
+  ctas: string[];
+  pricing: string[];
+  contacts: LandingPageContacts;
+  features: string[];
+  faqs: string[];
+  testimonials: string[];
+  meta: LandingPageMeta;
+  [key: string]: any;
+}
 
 export interface KtpFields {
   nik?: string;
@@ -59,6 +82,10 @@ export interface ScanOptions {
   filename?: string;
 }
 
+export interface BulkScanOptions extends ScanOptions {
+  concurrency?: number;
+}
+
 export declare class OcrError extends Error {
   statusCode: number;
   responseBody?: any;
@@ -72,4 +99,8 @@ export declare class OcrClient {
     file: Blob | File | Uint8Array | ArrayBuffer,
     options?: ScanOptions
   ): Promise<OcrResult<T>>;
+  scanBulk<T = Record<string, any>>(
+    files: Array<Blob | File | Uint8Array | ArrayBuffer>,
+    options?: BulkScanOptions
+  ): Promise<Array<OcrResult<T> & { error?: string; statusCode?: number }>>;
 }

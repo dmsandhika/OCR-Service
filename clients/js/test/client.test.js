@@ -83,4 +83,35 @@ describe("JS OcrClient", () => {
       (err) => err instanceof OcrError && err.statusCode === 401 && err.message === "Invalid API key"
     );
   });
+
+  it("should process multiple images via scanBulk with concurrency", async () => {
+    let callCount = 0;
+    const mockFetch = async () => {
+      callCount++;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          text: `Extracted text ${callCount}`,
+          confidence: 90,
+          type: "landing_page",
+          fields: { ctas: ["Coba Gratis"] },
+        }),
+      };
+    };
+
+    const client = new OcrClient({
+      baseUrl: "http://localhost:3000",
+      apiKey: "secret-key",
+      fetch: mockFetch,
+    });
+
+    const files = [Buffer.from("img1"), Buffer.from("img2"), Buffer.from("img3")];
+    const results = await client.scanBulk(files, { type: "landing_page", concurrency: 2 });
+
+    assert.equal(results.length, 3);
+    assert.equal(results[0].type, "landing_page");
+    assert.equal(results[0].fields.ctas[0], "Coba Gratis");
+    assert.equal(callCount, 3);
+  });
 });

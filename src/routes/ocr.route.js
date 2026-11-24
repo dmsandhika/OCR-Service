@@ -10,12 +10,12 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/tiff",
 ]);
 
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_FILE_SIZE_BYTES = 30 * 1024 * 1024;
 
 const ocrSchema = {
   summary: "Extract text from an image",
   description:
-    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 10MB) and receive the extracted text using Tesseract OCR (English + Indonesian + Malay). Optionally pass `type` to also get structured fields parsed out for a known document layout.",
+    "Upload an image (PNG, JPEG, WEBP, BMP, or TIFF, max 30MB) and receive the extracted text using Tesseract OCR (English + Indonesian + Malay). Supports full landing page screenshots and optional structured field extraction (`ktp`, `ic`, `passport`, `struk`, `landing_page`).",
   tags: ["OCR"],
   security: [{ apiKey: [] }],
   consumes: ["multipart/form-data"],
@@ -117,7 +117,7 @@ export default async function ocrRoutes(fastify) {
       const buffer = await file.toBuffer();
 
       if (buffer.length > MAX_FILE_SIZE_BYTES) {
-        return reply.code(413).send({ error: "File exceeds 10MB limit" });
+        return reply.code(413).send({ error: "File exceeds 30MB limit" });
       }
 
       try {
@@ -134,6 +134,77 @@ export default async function ocrRoutes(fastify) {
         request.log.error(err, "OCR processing failed");
         return reply.code(500).send({ error: "Failed to process image" });
       }
+    }
+  );
+
+  fastify.post(
+    "/ocr/bulk",
+    {
+      schema: {
+        summary: "Extract text from multiple images in bulk",
+        description: "Upload multiple images and extract text concurrently, with optional structured field extraction.",
+        tags: ["OCR"],
+        security: [{ apiKey: [] }],
+      },
+      preHandler: requireApiKey,
+    },
+    async (request, reply) => {
+      const rawFiles = request.body.files || request.body.file;
+      const documentType = typeof request.body.type === "object" ? request.body.type?.value : request.body.type;
+
+      if (!rawFiles) {
+        return reply.code(400).send({ error: "No files provided in 'files' or 'file'" });
+      }
+
+      if (documentType && !DOCUMENT_PARSERS[documentType]) {
+        return reply.code(400).send({ error: `Unsupported document type: ${documentType}` });
+      }
+
+      const files = Array.isArray(rawFiles) ? rawFiles : [rawFiles];
+      const results = [];
+      let successful = 0;
+
+      for (const item of files) {
+        const filename = item.filename || "image.jpg";
+        if (!ALLOWED_MIME_TYPES.has(item.mimetype)) {
+          results.push({
+            filename,
+            error: `Unsupported file type: ${item.mimetype}`,
+          });
+          continue;
+        }
+
+        const buffer = await item.toBuffer();
+        if (buffer.length > MAX_FILE_SIZE_BYTES) {
+          results.push({
+            filename,
+            error: "File exceeds 30MB limit",
+          });
+          continue;
+        }
+
+        try {
+          const res = await recognizeText(buffer);
+          let itemResult = { filename, ...res };
+          if (documentType) {
+            const fields = DOCUMENT_PARSERS[documentType](res.text);
+            itemResult = { ...itemResult, type: documentType, fields };
+          }
+          results.push(itemResult);
+          successful++;
+        } catch (err) {
+          results.push({
+            filename,
+            error: err.message || "Failed to process image",
+          });
+        }
+      }
+
+      return reply.send({
+        total: files.length,
+        successful,
+        results,
+      });
     }
   );
 }

@@ -7,7 +7,8 @@ Official JavaScript & TypeScript client library for OCR Service.
 - Mendukung Node.js (18+), browser, Deno, dan Bun.
 - Zero external dependencies (menggunakan native `fetch` dan `FormData`).
 - Lengkap dengan TypeScript definitions (`.d.ts`).
-- Ekstraksi terstruktur otomatis untuk **KTP**, **MyKad Malaysia (IC)**, **Paspor (MRZ)**, dan **Struk/Receipt**.
+- Ekstraksi terstruktur otomatis untuk **KTP**, **MyKad Malaysia (IC)**, **Paspor (MRZ)**, **Struk/Receipt**, dan **Landing Page** (CTAs, Pricing, Kontak, dsb).
+- Dukungan **Bulk Scan** (`scanBulk`) dengan concurrency control.
 
 ## Instalasi
 
@@ -38,6 +39,20 @@ const result = await client.scan(imageBuffer, { type: 'ktp' });
 console.log('NIK:', result.fields?.nik);
 console.log('Nama:', result.fields?.nama);
 console.log('Confidence:', result.confidence);
+
+// Scan Screenshot Landing Page (Otomatis deteksi CTA, Harga, Kontak, Headline)
+const lpBuffer = await fs.readFile('./landing-page-full.png');
+const lp = await client.scan(lpBuffer, { type: 'landing_page' });
+console.log('Headlines:', lp.fields?.headlines);
+console.log('Tombol CTA:', lp.fields?.ctas);
+console.log('Harga:', lp.fields?.pricing);
+console.log('Kontak:', lp.fields?.contacts);
+
+// Bulk Scan Banyak Gambar Sekaligus (Concurrency Control)
+const bulkResults = await client.scanBulk([imageBuffer, lpBuffer], {
+  concurrency: 2,
+});
+console.log('Total diproses:', bulkResults.length);
 ```
 
 ### Browser (File Input)

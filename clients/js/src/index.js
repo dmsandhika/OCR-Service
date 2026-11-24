@@ -98,4 +98,43 @@ export class OcrClient {
 
     return data;
   }
+
+  /**
+   * Scan multiple images in bulk with controlled concurrency.
+   *
+   * @param {Array<Blob | File | Buffer | Uint8Array>} files Array of files to scan
+   * @param {Object} [options]
+   * @param {'ktp' | 'ic' | 'passport' | 'struk' | 'landing_page'} [options.type] Document type parser
+   * @param {number} [options.concurrency=2] Number of concurrent requests
+   * @returns {Promise<Array<{ text: string, confidence: number, type?: string, fields?: Record<string, any>, error?: string }>>}
+   */
+  async scanBulk(files, options = {}) {
+    if (!Array.isArray(files) || files.length === 0) {
+      return [];
+    }
+
+    const concurrency = Math.max(1, options.concurrency || 2);
+    const results = new Array(files.length);
+    let index = 0;
+
+    const worker = async () => {
+      while (index < files.length) {
+        const currentIndex = index++;
+        const file = files[currentIndex];
+        try {
+          results[currentIndex] = await this.scan(file, options);
+        } catch (err) {
+          results[currentIndex] = {
+            error: err.message,
+            statusCode: err.statusCode || 500,
+          };
+        }
+      }
+    };
+
+    const workers = Array.from({ length: Math.min(concurrency, files.length) }, () => worker());
+    await Promise.all(workers);
+
+    return results;
+  }
 }

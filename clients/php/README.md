@@ -1,6 +1,6 @@
 # dmsandhika/ocr-client (PHP)
 
-Official PHP Client SDK for OCR Service. Membantu integrasi pemindaian OCR dan parsing dokumen terstruktur (**KTP**, **MyKad Malaysia**, **Paspor**, dan **Struk Belanja**) ke aplikasi PHP dan framework seperti **Laravel** atau **Symfony**.
+Official PHP Client SDK for OCR Service. Membantu integrasi pemindaian OCR dan parsing dokumen terstruktur (**KTP**, **MyKad Malaysia**, **Paspor**, **Struk Belanja**, dan **Landing Page**) ke aplikasi PHP dan framework seperti **Laravel** atau **Symfony**. Dukungan bulk scan multi-file.
 
 ## Instalasi via Composer
 
@@ -44,6 +44,19 @@ try {
         echo "Nama: " . ($result['fields']['nama'] ?? '-') . "\n";
         echo "Alamat: " . ($result['fields']['alamat'] ?? '-') . "\n";
     }
+
+    // Memindai Screenshot Landing Page Panjang
+    $lpResult = $client->scan(__DIR__ . '/landing-page.png', type: 'landing_page');
+    print_r($lpResult['fields']['ctas']);     // Daftar tombol CTA
+    print_r($lpResult['fields']['pricing']);  // Pola harga & diskon
+    print_r($lpResult['fields']['contacts']); // Email, WhatsApp, Domain
+
+    // Bulk Scan Banyak Gambar Sekaligus
+    $bulkResults = $client->scanBulk([
+        __DIR__ . '/sample-ktp.jpg',
+        __DIR__ . '/landing-page.png',
+    ], type: 'landing_page');
+    echo "Total diproses: " . count($bulkResults) . "\n";
 } catch (OcrException $e) {
     echo "Gagal OCR: " . $e->getMessage() . " (Status: " . $e->getStatusCode() . ")\n";
 }
